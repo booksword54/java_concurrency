@@ -61,22 +61,21 @@ public class ThreadPoolDemo {
         // 例如，Executors.newFixedThreadPool() 静态方法创建了一个 ThreadPoolExecutor ，
         // 它的参数 corePoolSize 和 maximumPoolSize 都是相等的，且参数 keepAliveTime 始终为 0 ，
         // 也就意味着此线程池中的线程数始终相同。
-        ThreadPoolExecutor fixedExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
-        fixedExecutor.submit(() -> {
+        ThreadPoolExecutor fixedThreadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
+        fixedThreadPoolExecutor.submit(() -> {
             Thread.sleep(1000);
             return null;
         });
-        fixedExecutor.submit(() -> {
+        fixedThreadPoolExecutor.submit(() -> {
             Thread.sleep(1000);
             return null;
         });
-        fixedExecutor.submit(() -> {
+        fixedThreadPoolExecutor.submit(() -> {
             Thread.sleep(1000);
             return null;
         });
-        System.out.println(fixedExecutor.getPoolSize() == 2); // true
-        System.out.println(fixedExecutor.getQueue()
-                                   .size() == 1); // true
+        System.out.println(fixedThreadPoolExecutor.getPoolSize() == 2); // true
+        System.out.println(fixedThreadPoolExecutor.getQueue().size() == 1); // true
         // 上面这个示例中，我们实例化了一个固定线程数为 2 的 ThreadPoolExecutor。
         // 这意味着如果同时运行的任务的数量始终小于或等于 2 ，那么这些任务会立即执行。否则，其中一些任务可能会被放入队列中等待轮到它们。
         // 上面这个示例中，我们创建了三个 Callable 任务，通过睡眠模拟 1000 毫秒的繁重工作。
@@ -92,22 +91,21 @@ public class ThreadPoolDemo {
         // 这些参数值意味着缓存的线程池可以无限制地增长以容纳任何数量的已提交任务。
         // 但是，当不再需要线程时，它们将在 60秒不活动后被销毁。
         // 这种线程池的使用场景一般是你的应用程序中有很多短期任务。
-        ThreadPoolExecutor cachedExecutor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
-        cachedExecutor.submit(() -> {
+        ThreadPoolExecutor cachedThreadPoolExecutor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+        cachedThreadPoolExecutor.submit(() -> {
             Thread.sleep(1000);
             return null;
         });
-        cachedExecutor.submit(() -> {
+        cachedThreadPoolExecutor.submit(() -> {
             Thread.sleep(1000);
             return null;
         });
-        cachedExecutor.submit(() -> {
+        cachedThreadPoolExecutor.submit(() -> {
             Thread.sleep(1000);
             return null;
         });
-        System.out.println(cachedExecutor.getPoolSize() == 3); // true
-        System.out.println(cachedExecutor.getQueue()
-                                   .size() == 0); // true
+        System.out.println(cachedThreadPoolExecutor.getPoolSize() == 3); // true
+        System.out.println(cachedThreadPoolExecutor.getQueue().size() == 0); // true
         // 上面这个示例中的队列大小始终为 0 ，因为在内部使用了 SynchronousQueue 的实例。
         // 在 SynchronousQueue 中，插入和删除操作总是成对出现且同时发生。因此队列实际上从不包含任何内容。
 
@@ -117,11 +115,11 @@ public class ThreadPoolDemo {
         // 在这个单线程 ThreadPoolExecutor 实例中，属性 corePoolSize 和属性 maximumPoolSize 的值都为 1，而属性 keepAliveTime 的值为 0 。
         // 在单线程 ThreadPoolExecutor 实例中，所有的任务都按顺序执行。因此，下面的示例中，任务完成后标志的值是 2。
         AtomicInteger counter = new AtomicInteger();
-        ExecutorService singleExecutor = Executors.newSingleThreadExecutor(); // 无法强制转换
-        singleExecutor.submit(() -> {
+        ExecutorService singleExecutorService = Executors.newSingleThreadExecutor(); // 无法强制转换
+        singleExecutorService.submit(() -> {
             counter.set(1);
         });
-        singleExecutor.submit(() -> {
+        singleExecutorService.submit(() -> {
             counter.compareAndSet(1, 2);
         });
         // 此外，单线程 ThreadPoolExecutor 实例使用了不可变包装器进行修饰，因此在创建后无法重新配置。当然了，这也是我们无法将该示例强制转换为 ThreadPoolExecutor 的原因。
@@ -135,13 +133,13 @@ public class ThreadPoolDemo {
         // 静态方法 Executors.newScheduledThreadPool() 方法用于创建包含了
         // 指定 corePoolSize，无上限 maximumPoolSize 和 0 存活时间 keepAliveTime 的 ScheduledThreadPoolExecutor 实例。
         // 例如下面的示例创建了一个包含了 5 个核心线程的 ScheduledThreadPoolExecutor 实例，且每隔 500 毫秒运行一个输出 Hello World 的任务
-        ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(5);
-        scheduledExecutor.schedule(() -> {
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(5);
+        scheduledExecutorService.schedule(() -> {
             System.out.println("Hello World");
         }, 500, TimeUnit.MILLISECONDS);
         // 下面的代码则演示了如何在 500 毫秒延迟后执行任务，然后每 100 毫秒重复执行一次。
         CountDownLatch lock = new CountDownLatch(3);
-        ScheduledFuture<?> scheduledFuture = scheduledExecutor.scheduleAtFixedRate(() -> {
+        ScheduledFuture<?> scheduledFuture = scheduledExecutorService.scheduleAtFixedRate(() -> {
             System.out.println("Hello World");
             lock.countDown();
         }, 500, 100, TimeUnit.MILLISECONDS);

@@ -9,16 +9,16 @@ public class ExecutorServiceDemo {
 
         // 1、Executors.newFixedThreadPool() 工厂方法创建 ExecutorService 实例
         // 创建ExecutorService 实例的最简单方法是使用 Executors 类的提供的工厂方法。比如
-        ExecutorService fixedThreadPool = Executors.newFixedThreadPool(10);
+        ExecutorService fixedExecutorService = Executors.newFixedThreadPool(10);
+        ExecutorService singleExecutorService = Executors.newSingleThreadExecutor();
         // 当然还有其它很多工厂方法，每种工厂方法都可以创建满足特定用例的预定义 ExecutorService 实例。
         // 你所需要做的就是找到自己想要的合适的方法。这些方法都在 Oracle 的 JDK 官方文档中有列出
 
         // 2、直接创建 ExecutorService 的实例
         // 因为ExecutorService 是只是一个接口，因此可以使用其任何实现类的实例。Java java.util.concurrent 包已经预定义了几种实现可供我们选择，或者你也可以创建自己的实现。
         // 例如，ThreadPoolExecutor 类实现了 ExecutorService 接口并提供了一些构造函数用于配置执行程序服务及其内部池。
-        ExecutorService threadPoolExecutor = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
+        ExecutorService executorService = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
         // 你可能会注意到，上面的代码与工厂方法 newSingleThreadExecutor() 的 源代码 非常相似。对于大多数情况，不需要详细的手动配置。
-        ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
 
 
         // 二、将任务分配给 ExecutorService
@@ -44,7 +44,6 @@ public class ExecutorServiceDemo {
 
         // 1、 首先来看看execute()方法；
         // 该方法返回值为空 ( void )。因此使用该方法没有任何可能获得任务执行结果或检查任务的状态，是正在运行 ( running ) 还是执行完毕 ( executed )。
-        ExecutorService executorService = Executors.newFixedThreadPool(10);
         executorService.execute(runnable); // void
 
         // 2、 其次看看submit()方法；
@@ -121,20 +120,20 @@ public class ExecutorServiceDemo {
         // 三、ScheduledExecutorService 接口
         // ScheduledExecutorService 接口用于在一些预定义的延迟之后运行任务和（ 或 ）定期运行任务。
         // 同样的，实例化 ScheduledExecutorService 的最佳方式是使用 Executors 类的工厂方法。
-        ScheduledExecutorService singleThreadScheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+        ScheduledExecutorService singleThreadScheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         // 有了实例之后，事情就好办了，比如，要在固定延迟后安排单个任务的执行，可以使用 ScheduledExecutorService 实例的 scheduled() 方法
         // scheduled() 方法有两个重载，分别用于执行 Runnable 任务或 Callable 任务。
-        ScheduledFuture<String> callableScheduledFuture = singleThreadScheduledExecutor.schedule(callable, 1, TimeUnit.SECONDS);
-        ScheduledFuture<?> runnableScheduledFuture = singleThreadScheduledExecutor.schedule(runnable, 1, TimeUnit.SECONDS);
+        ScheduledFuture<String> callableScheduledFuture = singleThreadScheduledExecutorService.schedule(callable, 1, TimeUnit.SECONDS);
+        ScheduledFuture<?> runnableScheduledFuture = singleThreadScheduledExecutorService.schedule(runnable, 1, TimeUnit.SECONDS);
         // 上面这个实例中的代码在执行 callable/runnable 之前延迟了一秒钟。
 
         // 另外，ScheduledExecutorService 实例还提供了另一个重要方法 scheduleAtFixedRate() ，它允许在固定延迟后定期执行任务。
         // 如果处理器需要更多时间来执行分配的任务，那么可以使用 scheduleAtFixedRate() 方法的 period 参数，ScheduledExecutorService 将等到当前任务完成后再开始下一个任务。
-        ScheduledFuture<?> scheduledAtFixedRateFuture = singleThreadScheduledExecutor.scheduleAtFixedRate(runnable, 100, 450, TimeUnit.MILLISECONDS);
+        ScheduledFuture<?> scheduledAtFixedRateScheduledFuture = singleThreadScheduledExecutorService.scheduleAtFixedRate(runnable, 100, 450, TimeUnit.MILLISECONDS);
         // 上面的代码块将在 100 毫秒的初始延迟后执行任务，之后，它将每 450 毫秒执行相同的任务。
 
         // 如果任务迭代之间必须具有固定长度的延迟，那么可以使用 scheduleWithFixedDelay() 方法 。例如，以下代码将保证当前执行结束与另一个执行开始之间的暂停时间为 150 毫秒。
-        ScheduledFuture<?> scheduledWithFixedDelayFuture = singleThreadScheduledExecutor.scheduleWithFixedDelay(runnable, 100, 150, TimeUnit.MILLISECONDS);
+        ScheduledFuture<?> scheduledWithFixedDelayScheduledFuture = singleThreadScheduledExecutorService.scheduleWithFixedDelay(runnable, 100, 150, TimeUnit.MILLISECONDS);
         // 根据scheduleAtFixedRate() 和 scheduleWithFixedDelay() 方法契约，在任务执行期间，如果 ExecutorService 终止了或任务抛出了异常，那么任务将自动结束。
 
         // 四、ExecutorService 或 Fork/Join
