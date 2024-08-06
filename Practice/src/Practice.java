@@ -1,6 +1,7 @@
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Practice {
     public static void main(String[] args) {
@@ -152,8 +153,102 @@ public class Practice {
         // fork/join 框架入口点是 ForkJoinPool 类，它是 ExecutorService 的一个实现。它实现了工作窃取算法，空闲线程会试图从忙线程中 「 窃取 」 工作。这允许在不同线程之间传播计算并在使用比通常的线程池所需的更少的线程时取得进展
 
 
+        // Q18: wait() 和 notify()
+        // Java 中，可以用来协调多个线程操作的一个工具是 「 哨兵块 」。这个哨兵块会在恢复执行前检查特定条件。
+        // 基于这种哨兵检查的思想，Java 在所有类的基类 Object 中提供了两个方法
+        // Object.wait()	暂停一个线程
+        // Object.notify()	唤醒一个线程
+        // 发送者 – 接收者同步问题
+        // Sender-Receiver ( 发送者 – 接收者 ) 应用程序，这个应用程序将利用wait() 和 notify() 方法建立它们之间的同步。
+        Data data = new Data();
+        Thread sender = new Thread(new Sender(data));
+        Thread receiver = new Thread(new Receiver(data));
+        sender.start();
+        receiver.start();
     }
 
+}
+
+class Data {
+
+    private String packet; // 通过网络传输的数据
+
+    private boolean transfer = true; // 用于Sender和Receiver之间的同步
+
+    public synchronized void send(String packet) {
+        while (!transfer) { // Sender 等待 Receiver 接收消息
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                System.out.println("Thread interrupted");
+            }
+        }
+        transfer = false;
+        this.packet = packet;
+        notifyAll();
+    }
+
+    public synchronized String receive() {
+        while (transfer) { // Receiver 等待 Sender 发送消息
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                System.out.println("Thread interrupted");
+            }
+        }
+        transfer = true;
+        notifyAll();
+        return packet;
+    }
+}
+
+class Sender implements Runnable {
+
+    private Data data;
+
+    @Override
+    public void run() {
+        String[] packets = {"1", "2", "3"};
+
+        for (String packet : packets) {
+            data.send(packet);
+            try {
+                // 随机时间间隔调用 Thread.sleep() 来模仿繁重的服务器端处理
+                Thread.sleep(ThreadLocalRandom.current().nextInt(1000, 5000));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                System.out.println("Thread interrupted");
+            }
+        }
+    }
+
+    public Sender(Data data) {
+        this.data = data;
+    }
+}
+
+class Receiver implements Runnable {
+
+    private Data load;
+
+    @Override
+    public void run() {
+        for (String msg = load.receive(); !"End".equals(msg); msg = load.receive()) {
+            System.out.println(msg);
+            try {
+                Thread.sleep(ThreadLocalRandom.current().nextInt(1000, 5000));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                System.out.println("Thread interrupted");
+            }
+        }
+    }
+
+    public Receiver(Data load) {
+        this.load = load;
+    }
 }
 
 class CustomBlockingQueue<T> {
